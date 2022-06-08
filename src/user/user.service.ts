@@ -1,14 +1,20 @@
 import { EntityRepository } from '@mikro-orm/mongodb';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { RoleEntity, UserEntity } from '../entities';
 
 @Injectable()
-export class UserService {
+export class UserService implements OnModuleDestroy {
+  private readonly logger = new Logger(UserService.name);
+
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: EntityRepository<UserEntity>,
   ) {}
+
+  async onModuleDestroy() {
+    this.logger.warn('Flushing...');
+  }
 
   async createUser() {
     const franz = new UserEntity('Franz', [new RoleEntity('admin')]);
@@ -38,10 +44,16 @@ export class UserService {
       user.name = user.name + ' (admin)';
     }
 
-    this.userRepository.persistAndFlush(admins);
+    await this.userRepository.persistAndFlush(admins);
   }
 
   public async deleteUsers() {
-    this.userRepository.nativeDelete({});
+    const users = await this.getUsers();
+
+    for (const user of users) {
+      // this does not remove until flushed
+      await this.userRepository.remove(user);
+    }
+    await this.userRepository.flush();
   }
 }
