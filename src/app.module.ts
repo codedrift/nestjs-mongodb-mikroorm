@@ -1,9 +1,8 @@
 import { BetterLoggerModule } from '@einsenundnullen/better-nestjs-logger';
+import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
-import { MikroOrmService } from 'src/mikroOrm.service';
-import { AppController } from './app.controller';
-import { MongoDbService } from './mongodb.service';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -14,14 +13,15 @@ import { MongoDbService } from './mongodb.service';
       entities: ['./dist/entities'],
       entitiesTs: ['./src/entities'],
       dbName: 'test',
-      debug: true,
-      allowGlobalContext: false,
       type: 'mongo',
-      registerRequestContext: false,
+      debug: true,
+      ensureIndexes: true,
+      highlighter: new MongoHighlighter(),
       clientUrl: 'mongodb://root:12345678@localhost:27020/?authSource=admin',
     }),
+    UserModule,
   ],
-  controllers: [AppController],
-  providers: [MongoDbService, MikroOrmService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

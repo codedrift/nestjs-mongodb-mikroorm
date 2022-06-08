@@ -1,13 +1,7 @@
-import {
-  Entity,
-  PrimaryKey,
-  Property,
-  SerializedPrimaryKey,
-} from '@mikro-orm/core';
+import { PrimaryKey, Property, SerializedPrimaryKey, Unique } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 
-@Entity({ collection: 'test' })
-export class TestEntity {
+export abstract class BaseEntity {
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -15,6 +9,9 @@ export class TestEntity {
   id!: string;
 
   @Property({ nullable: false })
+  @Unique({
+    name: 'app_uid_index',
+  })
   uid?: string;
 
   @Property()
@@ -22,12 +19,4 @@ export class TestEntity {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt = new Date();
-
-  @Property()
-  name: string;
-
-  constructor(name: string) {
-    this.name = name;
-    this.uid = 'dasdas';
-  }
 }
